@@ -1,5 +1,5 @@
 import { db } from './src/db';
-import { runAutoMatching } from './src/matcher';
+import { runAutoMatching } from './src/matching/runAutoMatching';
 
 async function main() {
   await runAutoMatching('900997767');
