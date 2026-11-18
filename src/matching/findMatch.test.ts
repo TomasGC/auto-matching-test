@@ -81,10 +81,10 @@ describe('findMatch: several candidates', () => {
     expect(result).toEqual({ kind: MatchKind.Matched, invoice: lumiere });
   });
 
-  it('does not take a supplier whose name only starts like another (SFRI vs SFRIDGE)', () => {
+  it('does not take a supplier whose name is only the start of a word of the label (SFR vs SFRI)', () => {
+    const sfr = makeInvoice({ id: 'sfr', supplier_name: 'SFR' });
     const sfri = makeInvoice({ id: 'sfri', supplier_name: 'SFRI SARL' });
-    const sfridge = makeInvoice({ id: 'sfridge', supplier_name: 'Sfridge SAS' });
-    const result = findMatch(makeTransaction({ label: 'PRLV SFRI SARL' }), [sfridge, sfri]);
+    const result = findMatch(makeTransaction({ label: 'VIR TRANSFERT SFRI SARL' }), [sfr, sfri]);
     expect(result).toEqual({ kind: MatchKind.Matched, invoice: sfri });
   });
 
@@ -106,12 +106,12 @@ describe('findMatch: several candidates', () => {
     });
   });
 
-  it('does not let an empty or missing invoice number name every invoice', () => {
-    const emptyNumber = makeInvoice({ id: 'empty', supplier_name: 'A', invoice_number: '' });
-    const nullNumber = makeInvoice({ id: 'null', supplier_name: 'B', invoice_number: null });
-    expect(findMatch(makeTransaction({ label: 'VIR 12345' }), [emptyNumber, nullNumber])).toEqual({
+  it.each([[''], [null]])('does not let an empty or missing invoice number (%s) name its invoice', (number) => {
+    const withoutNumber = makeInvoice({ id: 'without', supplier_name: 'A', invoice_number: number });
+    const other = makeInvoice({ id: 'other', supplier_name: 'B', invoice_number: 'FACT-0999' });
+    expect(findMatch(makeTransaction({ label: 'VIR 12345' }), [withoutNumber, other])).toEqual({
       kind: MatchKind.Ambiguous,
-      candidate_ids: ['empty', 'null'],
+      candidate_ids: ['without', 'other'],
     });
   });
 
